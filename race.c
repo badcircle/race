@@ -6,7 +6,7 @@
 #include <sqlite3.h>
 
 #define NUM_HORSES 6
-#define HORSE_NAMES_COUNT 12
+#define HORSE_NAMES_COUNT 24
 #define STARTING_MONEY 100.0
 #define LOAN_INTEREST 0.199  // 19.9%
 #define MIN_ODDS 1
@@ -35,9 +35,7 @@ const char* COLORS[] = {
 };
 
 const char* HORSE_NAMES[] = {
-    "Thunder", "Lightning", "Shadow", "Spirit",
-    "Storm", "Flash", "Blitz", "Dash",
-    "Arrow", "Comet", "Rocket", "Bolt"
+    "Thunder Roll", "Sir Trots-a-Lot", "Midnight Star", "Couch Potato", "Silver Wind", "Tax Deduction", "Noble Spirit", "Coffee Break", "Storm Chaser", "Naptime Champion", "Wild Wisdom", "Soup to Nuts", "Dark Victory", "Window Cleaner", "Desert Rose", "Certified Snack", "Morning Glory", "WiFi Password", "Royal Fortune", "Homework Eater", "Shadow Heart", "Fluffy Business", "River Dance", "Zaza Express"
 };
 
 typedef struct {
@@ -160,7 +158,7 @@ void displayHistory(sqlite3 *db) {
     
     printf("\nRecent Betting History:\n");
     printf("-------------------------------------------------------------------------------\n");
-    printf("Horse      Odds           Bet     Result            Balance                Debt\n");
+    printf("Horse            Odds         Bet  Result           Balance                Debt\n");
     printf("-------------------------------------------------------------------------------\n");
     
     while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -171,7 +169,7 @@ void displayHistory(sqlite3 *db) {
         double balance = sqlite3_column_double(stmt, 7);
         double debt = sqlite3_column_double(stmt, 8);
         
-        printf("%-10s %2d:1    $%9.2f     %-8s    $%12.2f       $%12.2f\n", 
+        printf("%-16s %2d:1  $%9.2f  %-8s   $%12.2f       $%12.2f\n", 
                horse, odds, bet, result, balance, debt);
     }
     
@@ -308,7 +306,7 @@ void initHorses(Horse horses[]) {
     
     // Ensure a mix of odds ranges
     int odds_ranges[NUM_HORSES][2] = {
-        {1, 3},    // Low odds (favorite)
+        {2, 3},    // Low odds (favorite)
         {4, 8},    // Low-mid odds
         {9, 15},   // Mid odds
         {16, 22},  // Mid-high odds
@@ -356,7 +354,23 @@ void displayPlayerState(PlayerState *player) {
     printf("\n");
 }
 
-int main() {
+int main(int argc, char *argv[]) {
+    // Process command line arguments
+    for (int i = 1; i < argc; i++) {
+        // Check for help flags
+        if (strcmp(argv[i], "-h") == 0 || 
+            strcmp(argv[i], "--h") == 0 || 
+            strcmp(argv[i], "--help") == 0) {
+            
+            printf("\nUsage: %s [options]\n\n", argv[0]);
+            printf("Options:\n");
+            printf("  -h, --h, --help    Display this help message\n");
+            printf("\nDescription:\n");
+            printf("  To start a fresh book, simply move, delete or rename the horce_racing.db file in this directory.\n\n");
+            
+            return 0;  // Exit after displaying help
+        }
+    }
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD dwMode = 0;
     GetConsoleMode(hOut, &dwMode);
@@ -448,9 +462,9 @@ int main() {
               // Add rally bonus for horses that are behind
               // More bonus for horses further behind, up to +15% for horses very far back
               int rallyBonus = 0;
-              if (distanceBehind > 3) {  // Only trigger rally attempts when significantly behind
-                  rallyBonus = (distanceBehind * 3); // 3% bonus per position behind
-                  if (rallyBonus > 15) rallyBonus = 15; // Cap the bonus at 15%
+              if (distanceBehind > 0) {  // Only trigger rally attempts when significantly behind
+                  rallyBonus = (distanceBehind * 4); // 3% bonus per position behind
+                  if (rallyBonus > 25) rallyBonus = 25; // Cap the bonus at 15%
                   
                   // Small random chance for a "super rally" - horse gets very motivated
                   if (rand() % 100 < 5) {  // 5% chance of super rally
@@ -468,12 +482,12 @@ int main() {
               if (rand() % 100 < moveChance) {
                   // When rallying, occasionally move 2 positions instead of 1
                   if (rallyBonus > 0 && rand() % 100 < 20) {  // 20% chance of double move during rally
-                      horses[i].position += 2;
+                      horses[i].position += 3;
                   } else {
                       horses[i].position++;
                   }
                   
-                  if (horses[i].position >= TRACK_WIDTH - 5) {
+                  if (horses[i].position >= TRACK_WIDTH - 4) {
                       racing = 0;
                       winner = i;
                       break;
